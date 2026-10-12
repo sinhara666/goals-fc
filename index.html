@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goals FC: Club, Coaches, Training, Rosters</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --bg:#07130c; --panel:rgba(255,255,255,.055); --panel2:rgba(255,255,255,.09);
+    --line:rgba(255,255,255,.13); --txt:#f2f7f1; --dim:#b7c9b8; --faint:#84997f;
+    --green:#22c55e; --green2:#4ade80; --gold:#fbbf24; --red:#f87171; --amber:#fbbf24;
+  }
+  body{ font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--txt); min-height:100vh; }
+  .bgfx{ position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(760px 440px at 10% -8%, rgba(34,197,94,.22), transparent 60%),
+      radial-gradient(820px 520px at 92% 6%, rgba(251,191,36,.10), transparent 58%),
+      radial-gradient(1000px 720px at 50% 118%, rgba(6,60,32,.55), transparent 62%),
+      linear-gradient(180deg,#07130c,#08170e 55%,#07130c); }
+  .bgfx::after{ content:''; position:absolute; inset:0; opacity:.5;
+    background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+    background-size:54px 54px; animation:gridmove 26s linear infinite; }
+  @keyframes gridmove{ from{ background-position:0 0,0 0; } to{ background-position:0 54px,0 0; } }
+  .wrap{ position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:18px 14px 64px; }
+  header{ text-align:center; padding:22px 0 4px; }
+  .crest{ width:74px; height:74px; margin:0 auto; border-radius:22px; display:grid; place-items:center; font-size:2rem;
+    background:linear-gradient(140deg, rgba(34,197,94,.9), rgba(6,60,32,.95)); border:1px solid rgba(74,222,128,.55);
+    box-shadow:0 16px 40px rgba(34,197,94,.3); }
+  .logo{ font-size:.74rem; letter-spacing:.42em; color:var(--faint); text-transform:uppercase; margin-top:12px; }
+  h1{ font-size:clamp(2rem,6vw,3.1rem); font-weight:800; line-height:1.04; margin-top:6px;
+    background:linear-gradient(92deg,#fff 8%,#bbf7d0 45%,var(--green2) 68%,var(--gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub{ color:var(--dim); max-width:600px; margin:10px auto 0; font-size:1rem; line-height:1.5; }
+  .tabs{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:20px; }
+  .tab{ border:1px solid var(--line); background:var(--panel); color:var(--dim); border-radius:999px; padding:9px 17px; font-size:.93rem; cursor:pointer; transition:.16s; }
+  .tab:hover{ transform:translateY(-1px); color:var(--txt); }
+  .tab.on{ background:linear-gradient(92deg, rgba(34,197,94,.9), rgba(21,128,61,.9)); color:#fff; border-color:transparent; font-weight:700; }
+  .modebar{ display:flex; justify-content:center; margin-top:12px; }
+  .modebtn{ border:1px solid rgba(251,191,36,.5); background:rgba(251,191,36,.1); color:var(--gold); border-radius:999px; padding:7px 16px; font-size:.86rem; cursor:pointer; }
+  .modebtn.on{ background:linear-gradient(92deg,#b45309,#f59e0b); color:#fff; border-color:transparent; font-weight:700; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:19px; backdrop-filter:blur(14px); box-shadow:0 18px 50px rgba(0,0,0,.45); margin-top:18px; }
+  .hidden{ display:none; }
+  h2.sec{ font-size:1.08rem; margin-bottom:2px; }
+  .hint{ color:var(--faint); font-size:.88rem; line-height:1.5; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(228px,1fr)); gap:13px; margin-top:13px; }
+  .pcard{ border:1px solid var(--line); background:rgba(0,0,0,.28); border-radius:16px; padding:15px; transition:.16s; }
+  .pcard:hover{ transform:translateY(-3px); border-color:rgba(74,222,128,.5); box-shadow:0 14px 30px rgba(0,0,0,.4); }
+  .pcard h3{ font-size:1.02rem; }
+  .pcard .role{ color:var(--green2); font-size:.84rem; font-weight:700; letter-spacing:.03em; margin-top:2px; }
+  .pcard p{ color:var(--dim); font-size:.9rem; line-height:1.5; margin-top:7px; }
+  .jersey{ float:right; width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-weight:800; font-size:1.05rem;
+    background:linear-gradient(140deg, rgba(34,197,94,.85), rgba(6,60,32,.9)); border:1px solid rgba(74,222,128,.5); }
+  .sess{ border:1px solid var(--line); background:rgba(0,0,0,.28); border-radius:16px; padding:15px; margin-top:12px; }
+  .sess h3{ font-size:1.03rem; }
+  .sess .when{ color:var(--gold); font-weight:700; font-size:.9rem; margin-top:2px; }
+  .sess p{ color:var(--dim); font-size:.9rem; line-height:1.5; margin-top:5px; }
+  .counts{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .count{ font-size:.82rem; border-radius:999px; padding:5px 12px; border:1px solid var(--line); background:rgba(255,255,255,.05); }
+  .count.in{ color:var(--green2); border-color:rgba(74,222,128,.55); }
+  .count.out{ color:var(--red); border-color:rgba(248,113,113,.5); }
+  .count.maybe{ color:var(--amber); border-color:rgba(251,191,36,.5); }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .chip{ border:1px solid var(--line); background:var(--panel2); color:var(--txt); border-radius:999px; padding:7px 14px; font-size:.86rem; cursor:pointer; }
+  .chip.on{ background:linear-gradient(92deg, rgba(34,197,94,.9), rgba(21,128,61,.9)); border-color:transparent; font-weight:700; }
+  .avrow{ display:flex; align-items:center; gap:9px; border:1px solid var(--line); background:rgba(0,0,0,.25); border-radius:13px; padding:10px 12px; margin-top:8px; flex-wrap:wrap; }
+  .avrow .nm{ flex:1; min-width:130px; font-size:.95rem; }
+  .avrow .nm small{ display:block; color:var(--faint); font-size:.78rem; }
+  .avbtn{ border:1px solid var(--line); background:rgba(255,255,255,.05); color:var(--dim); border-radius:10px; padding:7px 13px; font-size:.85rem; cursor:pointer; }
+  .avbtn.sel-in{ background:rgba(34,197,94,.85); color:#fff; border-color:transparent; font-weight:700; }
+  .avbtn.sel-out{ background:rgba(220,38,38,.8); color:#fff; border-color:transparent; font-weight:700; }
+  .avbtn.sel-maybe{ background:rgba(217,119,6,.85); color:#fff; border-color:transparent; font-weight:700; }
+  label{ display:block; font-size:.79rem; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin:13px 0 6px; }
+  input[type=text], input[type=date], input[type=time], textarea, select{ width:100%; background:rgba(0,0,0,.35); border:1px solid var(--line); border-radius:12px; color:var(--txt); padding:11px 13px; font-size:.97rem; font-family:inherit; color-scheme:dark; }
+  textarea{ min-height:60px; resize:vertical; }
+  input:focus, textarea:focus, select:focus{ outline:2px solid rgba(34,197,94,.55); border-color:transparent; }
+  .btn{ border:none; cursor:pointer; border-radius:13px; padding:12px 20px; font-size:.96rem; font-weight:700; color:#fff;
+    background:linear-gradient(92deg,#16a34a,#15803d 60%,#166534); transition:.16s; box-shadow:0 10px 26px rgba(34,197,94,.25); }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn.ghost{ background:var(--panel2); border:1px solid var(--line); box-shadow:none; font-weight:600; }
+  .btn.small{ padding:8px 14px; font-size:.85rem; }
+  .del{ border:1px solid var(--line); background:transparent; color:var(--faint); border-radius:9px; padding:5px 10px; cursor:pointer; font-size:.8rem; margin-top:9px; }
+  .del:hover{ color:#fca5a5; border-color:rgba(248,113,113,.6); }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:13px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:0 14px; }
+  @media (max-width:620px){ .grid2{ grid-template-columns:1fr; } }
+  .stat{ border:1px solid var(--line); background:rgba(0,0,0,.28); border-radius:16px; padding:15px; text-align:center; }
+  .stat b{ font-size:1.7rem; display:block; background:linear-gradient(90deg,#bbf7d0,var(--green2),var(--gold)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .stat span{ color:var(--dim); font-size:.85rem; }
+  .bar{ height:9px; border-radius:99px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:7px; }
+  .bar i{ display:block; height:100%; background:linear-gradient(90deg,#16a34a,#4ade80); border-radius:99px; }
+  .ann{ border-left:3px solid var(--gold); background:rgba(251,191,36,.06); border-radius:10px; padding:11px 14px; margin-top:10px; }
+  .ann b{ font-size:.96rem; } .ann p{ color:var(--dim); font-size:.9rem; line-height:1.5; margin-top:3px; }
+  .empty{ color:var(--faint); font-size:.93rem; padding:10px 2px; }
+  footer{ text-align:center; color:var(--faint); font-size:.85rem; margin-top:28px; line-height:1.6; }
+  .toast{ position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(80px); background:#0f2416; border:1px solid rgba(74,222,128,.55); color:var(--txt); padding:11px 20px; border-radius:999px; font-size:.9rem; transition:.3s; z-index:9; }
+  .toast.show{ transform:translateX(-50%) translateY(0); }
+  .kv{ display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-top:13px; }
+  .kv div{ border:1px solid var(--line); border-radius:13px; padding:12px 14px; background:rgba(0,0,0,.25); }
+  .kv small{ color:var(--faint); text-transform:uppercase; letter-spacing:.07em; font-size:.72rem; display:block; }
+  .kv b{ font-size:1rem; margin-top:3px; display:block; }
+</style>
+</head>
+<body>
+<div class="bgfx"></div>
+<div class="wrap">
+  <header>
+    <div class="crest">⚽</div>
+    <div class="logo">Club App</div>
+    <h1 id="clubTitle">Goals FC</h1>
+    <p class="sub" id="clubTag">Club info, coaches, training schedule, and rosters. Players check in, coaches see real numbers.</p>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-tab="club">Club</button>
+      <button class="tab" data-tab="schedule">Training</button>
+      <button class="tab" data-tab="roster">Roster</button>
+      <button class="tab" data-tab="checkin">Check In</button>
+      <button class="tab" data-tab="coaches">Coaches</button>
+      <button class="tab" data-tab="insights">Insights</button>
+    </div>
+    <div class="modebar"><button class="modebtn" id="modeBtn">Coach mode: off</button></div>
+  </header>
+
+  <section class="card" id="pane-club">
+    <h2 class="sec">The club</h2>
+    <div class="kv" id="clubKv"></div>
+    <h2 class="sec" style="margin-top:20px">Announcements</h2>
+    <div id="annList"></div>
+    <div class="coach-only hidden" id="clubForms">
+      <label>Club name</label><input type="text" id="c-name">
+      <label>Tagline</label><input type="text" id="c-tag">
+      <div class="grid2">
+        <div><label>Home ground</label><input type="text" id="c-ground"></div>
+        <div><label>Founded</label><input type="text" id="c-founded"></div>
+      </div>
+      <div class="grid2">
+        <div><label>Club colors</label><input type="text" id="c-colors"></div>
+        <div><label>Contact</label><input type="text" id="c-contact"></div>
+      </div>
+      <div class="row"><button class="btn small" id="clubSave">Save club info</button></div>
+      <label style="margin-top:20px">New announcement title</label><input type="text" id="annTitle">
+      <label>Announcement</label><textarea id="annBody"></textarea>
+      <div class="row"><button class="btn small" id="annAdd">Post announcement</button></div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="pane-schedule">
+    <h2 class="sec">Training schedule</h2>
+    <p class="hint">Every session, with live check in counts. Numbers update the second a player taps in.</p>
+    <div id="sessList"></div>
+    <div class="coach-only hidden">
+      <label>Session title</label><input type="text" id="s-title" placeholder="e.g. U12 Training">
+      <div class="grid2">
+        <div><label>Date</label><input type="date" id="s-date"></div>
+        <div><label>Time</label><input type="text" id="s-time" placeholder="6:00 PM to 7:30 PM"></div>
+      </div>
+      <div class="grid2">
+        <div><label>Squad</label><select id="s-squad"></select></div>
+        <div><label>Location</label><input type="text" id="s-loc" placeholder="Field 2"></div>
+      </div>
+      <label>Focus / notes</label><input type="text" id="s-focus" placeholder="e.g. Passing patterns and finishing">
+      <div class="row"><button class="btn small" id="sessAdd">Add session</button></div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="pane-roster">
+    <h2 class="sec">Roster</h2>
+    <p class="hint">Every player, their squad, position, and number.</p>
+    <div class="chips" id="squadChips"></div>
+    <div class="grid" id="playerGrid"></div>
+    <div class="coach-only hidden">
+      <label>Player name</label><input type="text" id="p-name">
+      <div class="grid2">
+        <div><label>Squad</label><select id="p-squad"></select></div>
+        <div><label>Position</label>
+          <select id="p-pos"><option>Goalkeeper</option><option>Defender</option><option>Midfielder</option><option>Forward</option><option>Winger</option><option>Striker</option></select></div>
+      </div>
+      <div class="grid2">
+        <div><label>Jersey number</label><input type="text" id="p-num" placeholder="10"></div>
+        <div><label>Guardian / contact</label><input type="text" id="p-contact" placeholder="Name and phone"></div>
+      </div>
+      <label>Note about the player</label><input type="text" id="p-note" placeholder="e.g. Left foot, taking free kicks">
+      <div class="row"><button class="btn small" id="playerAdd">Add player</button></div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="pane-checkin">
+    <h2 class="sec">Check in</h2>
+    <p class="hint">Pick the session, tap your name, say if you are coming. Coaches plan around real numbers, not group chat guesses.</p>
+    <label>Session</label>
+    <select id="ci-session"></select>
+    <div id="ciList" style="margin-top:10px"></div>
+  </section>
+
+  <section class="card hidden" id="pane-coaches">
+    <h2 class="sec">Coaches</h2>
+    <p class="hint">The people running the training.</p>
+    <div class="grid" id="coachGrid"></div>
+    <div class="coach-only hidden">
+      <label>Coach name</label><input type="text" id="co-name">
+      <div class="grid2">
+        <div><label>Role</label><input type="text" id="co-role" placeholder="Head Coach"></div>
+        <div><label>Squad</label><select id="co-squad"></select></div>
+      </div>
+      <label>Bio</label><textarea id="co-bio" placeholder="Experience, style, what they care about"></textarea>
+      <label>Contact</label><input type="text" id="co-contact" placeholder="Phone or email">
+      <div class="row"><button class="btn small" id="coachAdd">Add coach</button></div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="pane-insights">
+    <h2 class="sec">Insights</h2>
+    <p class="hint">Who shows up, how full training is, and where the club stands. Built from real check ins.</p>
+    <div class="grid" id="statGrid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))"></div>
+    <h2 class="sec" style="margin-top:20px">Most reliable players</h2>
+    <div id="reliableList"></div>
+    <h2 class="sec" style="margin-top:20px">Needs a nudge</h2>
+    <p class="hint">Players with sessions on the calendar who have not checked in yet.</p>
+    <div id="nudgeList"></div>
+  </section>
+
+  <footer>Goals FC club app. Runs in the browser, data stays on the device.</footer>
+</div>
+<div class="toast" id="toast">Saved</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const LS = 'goalsfc_v1';
+let S = load();
+
+function dayISO(offset){ const d = new Date(); d.setDate(d.getDate() + offset); return d.toISOString().slice(0,10); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1700); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtDate(iso){ try{ return new Date(iso + 'T12:00:00').toLocaleDateString(undefined,{ weekday:'short', month:'short', day:'numeric' }); }catch(e){ return iso; } }
+
+function seed(){
+  const players = [
+    { id:uid(), name:'Jayden Brooks', squad:'U14', pos:'Striker', num:'9', contact:'', note:'Captain. First to arrive, last to leave.' },
+    { id:uid(), name:'Mateo Alvarez', squad:'U14', pos:'Midfielder', num:'8', contact:'', note:'Runs the middle. Calm on the ball.' },
+    { id:uid(), name:'Noah Bennett', squad:'U14', pos:'Goalkeeper', num:'1', contact:'', note:'Big voice, bigger saves.' },
+    { id:uid(), name:'Elijah Ford', squad:'U14', pos:'Defender', num:'4', contact:'', note:'Reads the game two passes early.' },
+    { id:uid(), name:'Lucas Meyer', squad:'U12', pos:'Winger', num:'11', contact:'', note:'Fastest feet in the squad.' },
+    { id:uid(), name:'Omar Haddad', squad:'U12', pos:'Midfielder', num:'6', contact:'', note:'Never stops running.' },
+    { id:uid(), name:'Caleb Ross', squad:'U12', pos:'Defender', num:'3', contact:'', note:'Strong in the tackle, quiet leader.' },
+    { id:uid(), name:'Andre Boateng', squad:'U12', pos:'Striker', num:'10', contact:'', note:'Scores with both feet.' },
+    { id:uid(), name:'Micah Cole', squad:'U10', pos:'Forward', num:'7', contact:'', note:'Small, fearless, all energy.' },
+    { id:uid(), name:'Jonas Weber', squad:'U10', pos:'Goalkeeper', num:'1', contact:'', note:'Loves diving. Mud is a feature.' },
+    { id:uid(), name:'Sam Okafor', squad:'U10', pos:'Midfielder', num:'5', contact:'', note:'Passes before anyone asks.' },
+    { id:uid(), name:'Leo Fischer', squad:'U10', pos:'Defender', num:'2', contact:'', note:'Positioning beyond his years.' }
+  ];
+  const sessions = [
+    { id:uid(), title:'U10 Training', date:dayISO(1), time:'5:30 PM to 6:30 PM', squad:'U10', loc:'Field 1', focus:'Dribbling and fun finishing games' },
+    { id:uid(), title:'U12 Training', date:dayISO(2), time:'6:00 PM to 7:30 PM', squad:'U12', loc:'Field 2', focus:'Passing patterns and first touch' },
+    { id:uid(), title:'U14 Training', date:dayISO(3), time:'6:30 PM to 8:00 PM', squad:'U14', loc:'Main Pitch', focus:'Pressing shape and set pieces' },
+    { id:uid(), title:'U12 Training', date:dayISO(5), time:'6:00 PM to 7:30 PM', squad:'U12', loc:'Field 2', focus:'Small sided games, tournament style' },
+    { id:uid(), title:'U14 Training', date:dayISO(6), time:'6:30 PM to 8:00 PM', squad:'U14', loc:'Main Pitch', focus:'Match prep and finishing under pressure' }
+  ];
+  const avail = {};
+  const sU12 = sessions[1], sU14 = sessions[2];
+  avail[sU12.id] = {}; avail[sU14.id] = {};
+  players.filter(p=>p.squad==='U12').forEach((p,i)=>{ avail[sU12.id][p.id] = i===3? 'maybe' : 'in'; });
+  players.filter(p=>p.squad==='U14').forEach((p,i)=>{ avail[sU14.id][p.id] = i===2? 'out' : 'in'; });
+  return {
+    club: { name:'Goals FC', tag:'Where goals are made, on the pitch and off it.', ground:'Riverside Park, Main Pitch', founded:'2016', colors:'Emerald and black', contact:'goalsfc@example.com' },
+    coaches: [
+      { id:uid(), name:'Marcus Reed', role:'Head Coach', squad:'U14', bio:'Twelve years coaching youth football. Believes training should be the best two hours of a kid\u2019s week.', contact:'' },
+      { id:uid(), name:'Dana Whitfield', role:'Assistant Coach', squad:'U12', bio:'Runs the U12s with patience and a whistle she rarely needs. First touch is her religion.', contact:'' },
+      { id:uid(), name:'Leo Martins', role:'Goalkeeper Coach', squad:'All squads', bio:'Former semi pro keeper. Trains every keeper at the club, U10 to U14.', contact:'' }
+    ],
+    players, sessions,
+    announcements: [
+      { id:uid(), title:'New training balls are in', body:'Fresh set of balls and bibs arrived this week. Look after them, they are the good ones.', ts:Date.now() - 86400000 },
+      { id:uid(), title:'Check in before every session', body:'Parents and players: tap Check In before training so coaches can plan groups and drills around real numbers.', ts:Date.now() - 3600000 }
+    ],
+    avail, coachMode:false, squadFilter:'All'
+  };
+}
+function load(){
+  try{ const raw = localStorage.getItem(LS); if(raw){ const s = JSON.parse(raw); if(s && s.club) return s; } }catch(e){}
+  return seed();
+}
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+function squads(){ return [...new Set(S.players.map(p=>p.squad))]; }
+function squadPlayers(sq){ return sq === 'All squads'? S.players.slice() : S.players.filter(p=> p.squad === sq); }
+function counts(sess){
+  const a = S.avail[sess.id] || {};
+  const pool = squadPlayers(sess.squad);
+  let inn=0, out=0, maybe=0;
+  pool.forEach(p=>{ const v = a[p.id]; if(v==='in') inn++; else if(v==='out') out++; else if(v==='maybe') maybe++; });
+  return { inn, out, maybe, waiting: pool.length - inn - out - maybe, total: pool.length };
+}
+
+/* floating soccer balls */
+(function balls(){
+  const style = document.createElement('style');
+  style.textContent = `
+    .balls{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+    .ball{ position:absolute; display:block; opacity:.16; filter:drop-shadow(0 18px 22px rgba(0,0,0,.5)); animation:floaty ease-in-out infinite alternate, spin linear infinite; }
+    @keyframes floaty{ from{ transform:translateY(-16px); } to{ transform:translateY(22px); } }
+    @keyframes spin{ from{ rotate:0deg; } to{ rotate:360deg; } }
+    .crest{ animation:crestIn .8s cubic-bezier(.2,1.4,.4,1) both; }
+    @keyframes crestIn{ from{ transform:scale(.4) rotate(-14deg); opacity:0; } to{ transform:scale(1) rotate(0); opacity:1; } }
+    .sess, .pcard{ animation:rise .5s ease both; }
+    @keyframes rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }`;
+  document.head.appendChild(style);
+  const layer = document.createElement('div'); layer.className = 'balls';
+  const spots = [ [4,'6%',150], [9,'84%',110], [22,'92%',64], [38,'2%',70], [55,'90%',150], [70,'8%',56], [84,'86%',84], [16,'45%',44] ];
+  spots.forEach(([top,left,size],i)=>{
+    const b = document.createElement('span'); b.className = 'ball'; b.textContent = '⚽';
+    b.style.top = top + '%'; b.style.left = left; b.style.fontSize = size + 'px';
+    b.style.animationDuration = (5 + i) + 's, ' + (24 + i * 7) + 's';
+    layer.appendChild(b);
+  });
+  document.body.appendChild(layer);
+})();
+
+/* tabs */
+document.querySelectorAll('#tabs .tab').forEach(btn=>{
+  btn.onclick = ()=>{
+    document.querySelectorAll('#tabs .tab').forEach(b=> b.classList.toggle('on', b === btn));
+    ['club','schedule','roster','checkin','coaches','insights'].forEach(t=> $('pane-' + t).classList.toggle('hidden', t !== btn.dataset.tab));
+  };
+});
+function applyMode(){
+  document.querySelectorAll('.coach-only').forEach(el=> el.classList.toggle('hidden', !S.coachMode));
+  $('modeBtn').textContent = 'Coach mode: ' + (S.coachMode? 'on' : 'off');
+  $('modeBtn').classList.toggle('on', S.coachMode);
+  renderAll();
+}
+$('modeBtn').onclick = ()=>{ S.coachMode = !S.coachMode; save(); applyMode(); toast(S.coachMode? 'Coach mode on. You can add and edit.' : 'Coach mode off.'); };
+
+/* club */
+function renderClub(){
+  $('clubTitle').textContent = S.club.name;
+  $('clubTag').textContent = S.club.tag;
+  document.title = S.club.name + ': Club, Coaches, Training, Rosters';
+  $('clubKv').innerHTML = [
+    ['Home ground', S.club.ground], ['Founded', S.club.founded], ['Colors', S.club.colors], ['Contact', S.club.contact],
+    ['Players', S.players.length], ['Coaches', S.coaches.length], ['Squads', squads().join(', ')], ['Sessions on the board', S.sessions.length]
+  ].map(([k,v])=> '<div><small>' + esc(k) + '</small><b>' + esc(String(v)) + '</b></div>').join('');
+  $('annList').innerHTML = S.announcements.length? '' : '<div class="empty">No announcements right now.</div>';
+  S.announcements.slice().reverse().forEach(a=>{
+    const d = document.createElement('div'); d.className = 'ann';
+    d.innerHTML = '<b></b><p></p>';
+    d.querySelector('b').textContent = a.title; d.querySelector('p').textContent = a.body;
+    if(S.coachMode){ const del = document.createElement('button'); del.className='del'; del.textContent='Delete'; del.onclick=()=>{ S.announcements = S.announcements.filter(x=>x.id!==a.id); save(); renderClub(); }; d.appendChild(del); }
+    $('annList').appendChild(d);
+  });
+  if(S.coachMode){ $('c-name').value=S.club.name; $('c-tag').value=S.club.tag; $('c-ground').value=S.club.ground; $('c-founded').value=S.club.founded; $('c-colors').value=S.club.colors; $('c-contact').value=S.club.contact; }
+}
+$('clubSave').onclick = ()=>{
+  S.club.name = $('c-name').value.trim() || S.club.name; S.club.tag = $('c-tag').value.trim();
+  S.club.ground = $('c-ground').value.trim(); S.club.founded = $('c-founded').value.trim();
+  S.club.colors = $('c-colors').value.trim(); S.club.contact = $('c-contact').value.trim();
+  save(); renderClub(); toast('Club info saved');
+};
+$('annAdd').onclick = ()=>{
+  const t = $('annTitle').value.trim(), b = $('annBody').value.trim();
+  if(!t || !b){ toast('Give the announcement a title and a message'); return; }
+  S.announcements.push({ id:uid(), title:t, body:b, ts:Date.now() });
+  $('annTitle').value=''; $('annBody').value=''; save(); renderClub(); toast('Announcement posted');
+};
+
+/* schedule */
+function renderSchedule(){
+  const box = $('sessList'); box.innerHTML = '';
+  const sorted = S.sessions.slice().sort((a,b)=> a.date < b.date? -1 : 1);
+  if(!sorted.length) box.innerHTML = '<div class="empty">No sessions yet. Coach mode adds them.</div>';
+  sorted.forEach(s=>{
+    const c = counts(s);
+    const d = document.createElement('div'); d.className = 'sess';
+    d.innerHTML = '<h3></h3><div class="when"></div><p class="det"></p><p class="foc"></p>' +
+      '<div class="counts"><span class="count in">In: ' + c.inn + '</span><span class="count maybe">Maybe: ' + c.maybe + '</span><span class="count out">Out: ' + c.out + '</span><span class="count">Not answered: ' + c.waiting + ' of ' + c.total + '</span></div>';
+    d.querySelector('h3').textContent = s.title;
+    d.querySelector('.when').textContent = fmtDate(s.date) + ' · ' + s.time;
+    d.querySelector('.det').textContent = s.squad + ' · ' + s.loc;
+    d.querySelector('.foc').textContent = s.focus || '';
+    if(S.coachMode){ const del = document.createElement('button'); del.className='del'; del.textContent='Delete session'; del.onclick=()=>{ S.sessions = S.sessions.filter(x=>x.id!==s.id); delete S.avail[s.id]; save(); renderAll(); }; d.appendChild(del); }
+    box.appendChild(d);
+  });
+  const sel = $('s-squad'); const cur = sel.value;
+  sel.innerHTML = squads().concat(['All squads']).map(x=> '<option>' + esc(x) + '</option>').join('');
+  if(cur) sel.value = cur;
+  fillSessionPicker();
+}
+$('sessAdd').onclick = ()=>{
+  const t = $('s-title').value.trim(), dt = $('s-date').value;
+  if(!t || !dt){ toast('A session needs a title and a date'); return; }
+  S.sessions.push({ id:uid(), title:t, date:dt, time:$('s-time').value.trim() || 'Time TBC', squad:$('s-squad').value, loc:$('s-loc').value.trim() || 'TBC', focus:$('s-focus').value.trim() });
+  $('s-title').value=''; $('s-focus').value=''; save(); renderAll(); toast('Session added');
+};
+
+/* roster */
+function renderRoster(){
+  const chips = $('squadChips'); chips.innerHTML = '';
+  ['All'].concat(squads()).forEach(sq=>{
+    const b = document.createElement('button'); b.className = 'chip' + (S.squadFilter === sq? ' on' : ''); b.textContent = sq;
+    b.onclick = ()=>{ S.squadFilter = sq; save(); renderRoster(); };
+    chips.appendChild(b);
+  });
+  const grid = $('playerGrid'); grid.innerHTML = '';
+  const list = S.squadFilter === 'All'? S.players : S.players.filter(p=> p.squad === S.squadFilter);
+  if(!list.length) grid.innerHTML = '<div class="empty">No players in this squad yet.</div>';
+  list.forEach(p=>{
+    const d = document.createElement('div'); d.className = 'pcard';
+    d.innerHTML = '<div class="jersey"></div><h3></h3><div class="role"></div><p></p>';
+    d.querySelector('.jersey').textContent = p.num || '·';
+    d.querySelector('h3').textContent = p.name;
+    d.querySelector('.role').textContent = p.pos + ' · ' + p.squad;
+    d.querySelector('p').textContent = (p.note || '') + (p.contact? ' Guardian: ' + p.contact : '');
+    if(S.coachMode){ const del = document.createElement('button'); del.className='del'; del.textContent='Remove player'; del.onclick=()=>{ S.players = S.players.filter(x=>x.id!==p.id); save(); renderAll(); }; d.appendChild(del); }
+    grid.appendChild(d);
+  });
+  const sel = $('p-squad'); const cur = sel.value;
+  sel.innerHTML = squads().map(x=> '<option>' + esc(x) + '</option>').join('') + '<option>New squad...</option>';
+  if(cur && squads().includes(cur)) sel.value = cur;
+}
+$('playerAdd').onclick = ()=>{
+  const n = $('p-name').value.trim(); if(!n){ toast('The player needs a name'); return; }
+  let sq = $('p-squad').value;
+  if(sq === 'New squad...'){ sq = prompt('Name the new squad (e.g. U16)'); if(!sq) return; }
+  S.players.push({ id:uid(), name:n, squad:sq, pos:$('p-pos').value, num:$('p-num').value.trim(), contact:$('p-contact').value.trim(), note:$('p-note').value.trim() });
+  $('p-name').value=''; $('p-num').value=''; $('p-contact').value=''; $('p-note').value='';
+  save(); renderAll(); toast(n + ' added to ' + sq);
+};
+
+/* check in */
+function fillSessionPicker(){
+  const sel = $('ci-session'); const cur = sel.value;
+  const sorted = S.sessions.slice().sort((a,b)=> a.date < b.date? -1 : 1);
+  sel.innerHTML = sorted.map(s=> '<option value="' + s.id + '">' + esc(s.title) + ' · ' + fmtDate(s.date) + ' · ' + esc(s.squad) + '</option>').join('');
+  if(cur && sorted.some(s=> s.id === cur)) sel.value = cur;
+  renderCheckin();
+}
+$('ci-session').addEventListener('change', renderCheckin);
+function renderCheckin(){
+  const box = $('ciList'); box.innerHTML = '';
+  const sess = S.sessions.find(s=> s.id === $('ci-session').value);
+  if(!sess){ box.innerHTML = '<div class="empty">No sessions on the board yet.</div>'; return; }
+  const pool = squadPlayers(sess.squad);
+  const a = S.avail[sess.id] || (S.avail[sess.id] = {});
+  if(!pool.length){ box.innerHTML = '<div class="empty">No players in ' + esc(sess.squad) + ' yet.</div>'; return; }
+  pool.forEach(p=>{
+    const row = document.createElement('div'); row.className = 'avrow';
+    row.innerHTML = '<div class="nm"></div>';
+    row.querySelector('.nm').innerHTML = esc(p.name) + '<small>' + esc(p.pos) + ' · #' + esc(p.num || '·') + '</small>';
+    [['in','In'],['maybe','Maybe'],['out','Out']].forEach(([v,label])=>{
+      const b = document.createElement('button'); b.className = 'avbtn' + (a[p.id] === v? ' sel-' + v : ''); b.textContent = label;
+      b.onclick = ()=>{ a[p.id] = (a[p.id] === v? undefined : v); if(!a[p.id]) delete a[p.id]; save(); renderCheckin(); renderSchedule(); };
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+  });
+}
+
+/* coaches */
+function renderCoaches(){
+  const grid = $('coachGrid'); grid.innerHTML = '';
+  if(!S.coaches.length) grid.innerHTML = '<div class="empty">No coaches listed yet.</div>';
+  S.coaches.forEach(c=>{
+    const d = document.createElement('div'); d.className = 'pcard';
+    d.innerHTML = '<h3></h3><div class="role"></div><p></p>';
+    d.querySelector('h3').textContent = c.name;
+    d.querySelector('.role').textContent = c.role + ' · ' + c.squad;
+    d.querySelector('p').textContent = (c.bio || '') + (c.contact? ' Contact: ' + c.contact : '');
+    if(S.coachMode){ const del = document.createElement('button'); del.className='del'; del.textContent='Remove coach'; del.onclick=()=>{ S.coaches = S.coaches.filter(x=>x.id!==c.id); save(); renderCoaches(); }; d.appendChild(del); }
+    grid.appendChild(d);
+  });
+  const sel = $('co-squad'); const cur = sel.value;
+  sel.innerHTML = squads().concat(['All squads']).map(x=> '<option>' + esc(x) + '</option>').join('');
+  if(cur) sel.value = cur;
+}
+$('coachAdd').onclick = ()=>{
+  const n = $('co-name').value.trim(); if(!n){ toast('The coach needs a name'); return; }
+  S.coaches.push({ id:uid(), name:n, role:$('co-role').value.trim() || 'Coach', squad:$('co-squad').value, bio:$('co-bio').value.trim(), contact:$('co-contact').value.trim() });
+  $('co-name').value=''; $('co-role').value=''; $('co-bio').value=''; $('co-contact').value='';
+  save(); renderCoaches(); toast(n + ' added');
+};
+
+/* insights */
+function renderInsights(){
+  const totalResponses = Object.values(S.avail).reduce((n,a)=> n + Object.keys(a).length, 0);
+  const totalIn = Object.values(S.avail).reduce((n,a)=> n + Object.values(a).filter(v=> v==='in').length, 0);
+  const upcoming = S.sessions.filter(s=> s.date >= dayISO(0)).length;
+  $('statGrid').innerHTML = [
+    [S.players.length, 'Players'], [S.coaches.length, 'Coaches'], [upcoming, 'Sessions coming up'],
+    [totalResponses, 'Check ins given'], [totalIn, 'Confirmed in']
+  ].map(([n,l])=> '<div class="stat"><b>' + n + '</b><span>' + l + '</span></div>').join('');
+  const rel = S.players.map(p=>{
+    let chances = 0, inns = 0;
+    S.sessions.filter(s=> s.squad === p.squad || s.squad === 'All squads').forEach(s=>{
+      const a = S.avail[s.id]; if(a && Object.keys(a).length){ chances++; if(a[p.id] === 'in') inns++; }
+    });
+    return { p, chances, inns, pct: chances? Math.round(inns / chances * 100) : -1 };
+  }).filter(r=> r.chances > 0).sort((a,b)=> b.pct - a.pct);
+  $('reliableList').innerHTML = rel.length? '' : '<div class="empty">Check ins will build this list.</div>';
+  rel.forEach(r=>{
+    const d = document.createElement('div'); d.className = 'sess';
+    d.innerHTML = '<h3></h3><p></p><div class="bar"><i style="width:' + r.pct + '%"></i></div>';
+    d.querySelector('h3').textContent = r.p.name + ' · ' + r.pct + '%';
+    d.querySelector('p').textContent = 'In for ' + r.inns + ' of ' + r.chances + ' sessions with check ins · ' + r.p.squad;
+    $('reliableList').appendChild(d);
+  });
+  const next = S.sessions.slice().sort((a,b)=> a.date < b.date? -1 : 1).find(s=> s.date >= dayISO(0));
+  const nud = $('nudgeList'); nud.innerHTML = '';
+  if(!next){ nud.innerHTML = '<div class="empty">No upcoming session.</div>'; return; }
+  const a = S.avail[next.id] || {};
+  const missing = squadPlayers(next.squad).filter(p=> !a[p.id]);
+  if(!missing.length){ nud.innerHTML = '<div class="empty">Everybody has answered for ' + esc(next.title) + '. Beautiful.</div>'; return; }
+  nud.innerHTML = '<p class="hint" style="margin-bottom:6px">For ' + esc(next.title) + ' (' + fmtDate(next.date) + '), still no word from:</p>' +
+    missing.map(p=> '<div class="avrow"><div class="nm">' + esc(p.name) + '<small>' + esc(p.squad) + ' · ' + esc(p.pos) + '</small></div></div>').join('');
+}
+
+function renderAll(){ renderClub(); renderSchedule(); renderRoster(); renderCoaches(); renderInsights(); }
+applyMode();
+</script>
+</body>
+</html>
