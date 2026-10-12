@@ -137,6 +137,8 @@
         <div><label>Contact</label><input type="text" id="c-contact"></div>
       </div>
       <div class="row"><button class="btn small" id="clubSave">Save club info</button></div>
+      <div class="row"><button class="btn ghost small" id="wipeBtn" style="border-color:rgba(248,113,113,.55);color:#fca5a5">Start fresh: erase all sample data</button></div>
+      <p class="hint">One tap clears the sample players, coaches, sessions, and announcements so he starts from a clean club. Club name and info stay, and he can edit those above.</p>
       <label style="margin-top:20px">New announcement title</label><input type="text" id="annTitle">
       <label>Announcement</label><textarea id="annBody"></textarea>
       <div class="row"><button class="btn small" id="annAdd">Post announcement</button></div>
@@ -353,6 +355,11 @@ $('clubSave').onclick = ()=>{
   S.club.ground = $('c-ground').value.trim(); S.club.founded = $('c-founded').value.trim();
   S.club.colors = $('c-colors').value.trim(); S.club.contact = $('c-contact').value.trim();
   save(); renderClub(); toast('Club info saved');
+};
+$('wipeBtn').onclick = ()=>{
+  if(!confirm('Erase all sample players, coaches, sessions, and announcements? This cannot be undone.')) return;
+  S.players = []; S.coaches = []; S.sessions = []; S.announcements = []; S.avail = {}; S.squadFilter = 'All'; S.coachMode = true;
+  save(); applyMode(); toast('Clean club. Ready for his real teams.');
 };
 $('annAdd').onclick = ()=>{
   const t = $('annTitle').value.trim(), b = $('annBody').value.trim();
